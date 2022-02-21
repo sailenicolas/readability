@@ -57,14 +57,14 @@ function Readability(doc, options) {
 
   // Start with all flags set
   this._flags = this.FLAG_STRIP_UNLIKELYS |
-                this.FLAG_WEIGHT_CLASSES |
-                this.FLAG_CLEAN_CONDITIONALLY;
+      this.FLAG_WEIGHT_CLASSES |
+      this.FLAG_CLEAN_CONDITIONALLY;
 
 
   // Control whether log messages are sent to the console
   if (this._debug) {
     let logNode = function(node) {
-      if (node.nodeType == node.TEXT_NODE) {
+      if (node.nodeType === node.TEXT_NODE) {
         return `${node.nodeName} ("${node.textContent}")`;
       }
       let attrPairs = Array.from(node.attributes || [], function(attr) {
@@ -80,7 +80,7 @@ function Readability(doc, options) {
         dump("Reader: (Readability) " + msg + "\n");
       } else if (typeof console !== "undefined") {
         let args = Array.from(arguments, arg => {
-          if (arg && arg.nodeType == this.ELEMENT_NODE) {
+          if (arg && arg.nodeType === this.ELEMENT_NODE) {
             return logNode(arg);
           }
           return arg;
@@ -182,7 +182,7 @@ Readability.prototype = {
    *
    * @param Element
    * @return void
-  **/
+   **/
   _postProcessContent: function(articleContent) {
     // Readability cannot open relative uris so we convert them to absolute uris.
     this._fixRelativeUris(articleContent);
@@ -210,9 +210,9 @@ Readability.prototype = {
     if (this._docJSDOMParser && nodeList._isLiveNodeList) {
       throw new Error("Do not pass live node lists to _removeNodes");
     }
-    for (var i = nodeList.length - 1; i >= 0; i--) {
-      var node = nodeList[i];
-      var parentNode = node.parentNode;
+    for (let i = nodeList.length - 1; i >= 0; i--) {
+      let node = nodeList[i];
+      let parentNode = node.parentNode;
       if (parentNode) {
         if (!filterFn || filterFn.call(this, node, i, nodeList)) {
           parentNode.removeChild(node);
@@ -305,9 +305,9 @@ Readability.prototype = {
    * @return Array
    */
   _concatNodeLists: function() {
-    var slice = Array.prototype.slice;
-    var args = slice.call(arguments);
-    var nodeLists = args.map(function(list) {
+    let slice = Array.prototype.slice;
+    let args = slice.call(arguments);
+    let nodeLists = args.map(function (list) {
       return slice.call(list);
     });
     return Array.prototype.concat.apply([], nodeLists);
@@ -318,7 +318,7 @@ Readability.prototype = {
       return node.querySelectorAll(tagNames.join(","));
     }
     return [].concat.apply([], tagNames.map(function(tag) {
-      var collection = node.getElementsByTagName(tag);
+      let collection = node.getElementsByTagName(tag);
       return Array.isArray(collection) ? collection : Array.from(collection);
     }));
   },
@@ -332,13 +332,13 @@ Readability.prototype = {
    * @return void
    */
   _cleanClasses: function(node) {
-    var classesToPreserve = this._classesToPreserve;
-    var className = (node.getAttribute("class") || "")
-      .split(/\s+/)
-      .filter(function(cls) {
-        return classesToPreserve.indexOf(cls) != -1;
-      })
-      .join(" ");
+    let classesToPreserve = this._classesToPreserve;
+    let className = (node.getAttribute("class") || "")
+        .split(/\s+/)
+        .filter(function (cls) {
+          return classesToPreserve.indexOf(cls) != -1;
+        })
+        .join(" ");
 
     if (className) {
       node.setAttribute("class", className);
@@ -359,11 +359,12 @@ Readability.prototype = {
    * @return void
    */
   _fixRelativeUris: function(articleContent) {
-    var baseURI = this._doc.baseURI;
-    var documentURI = this._doc.documentURI;
+    let baseURI = this._doc.baseURI;
+    let documentURI = this._doc.documentURI;
+
     function toAbsoluteURI(uri) {
       // Leave hash links alone if the base URI matches the document URI:
-      if (baseURI == documentURI && uri.charAt(0) == "#") {
+      if (baseURI === documentURI && uri.charAt(0) === "#") {
         return uri;
       }
 
@@ -376,20 +377,20 @@ Readability.prototype = {
       return uri;
     }
 
-    var links = this._getAllNodesWithTag(articleContent, ["a"]);
+    let links = this._getAllNodesWithTag(articleContent, ["a"]);
     this._forEachNode(links, function(link) {
-      var href = link.getAttribute("href");
+      let href = link.getAttribute("href");
       if (href) {
         // Remove links with javascript: URIs, since
         // they won't work after scripts have been removed from the page.
         if (href.indexOf("javascript:") === 0) {
           // if the link only contains simple text content, it can be converted to a text node
           if (link.childNodes.length === 1 && link.childNodes[0].nodeType === this.TEXT_NODE) {
-            var text = this._doc.createTextNode(link.textContent);
+            let text = this._doc.createTextNode(link.textContent);
             link.parentNode.replaceChild(text, link);
           } else {
             // if the link has multiple children, they should all be preserved
-            var container = this._doc.createElement("span");
+            let container = this._doc.createElement("span");
             while (link.firstChild) {
               container.appendChild(link.firstChild);
             }
@@ -401,14 +402,14 @@ Readability.prototype = {
       }
     });
 
-    var medias = this._getAllNodesWithTag(articleContent, [
+    let medias = this._getAllNodesWithTag(articleContent, [
       "img", "picture", "figure", "video", "audio", "source"
     ]);
 
     this._forEachNode(medias, function(media) {
-      var src = media.getAttribute("src");
-      var poster = media.getAttribute("poster");
-      var srcset = media.getAttribute("srcset");
+      let src = media.getAttribute("src");
+      let poster = media.getAttribute("poster");
+      let srcset = media.getAttribute("srcset");
 
       if (src) {
         media.setAttribute("src", toAbsoluteURI(src));
@@ -419,7 +420,7 @@ Readability.prototype = {
       }
 
       if (srcset) {
-        var newSrcset = srcset.replace(this.REGEXPS.srcsetUrl, function(_, p1, p2, p3) {
+        let newSrcset = srcset.replace(this.REGEXPS.srcsetUrl, function (_, p1, p2, p3) {
           return toAbsoluteURI(p1) + (p2 || "") + p3;
         });
 
@@ -429,7 +430,7 @@ Readability.prototype = {
   },
 
   _simplifyNestedElements: function(articleContent) {
-    var node = articleContent;
+    let node = articleContent;
 
     while (node) {
       if (node.parentNode && ["DIV", "SECTION"].includes(node.tagName) && !(node.id && node.id.startsWith("readability"))) {
@@ -437,8 +438,8 @@ Readability.prototype = {
           node = this._removeAndGetNext(node);
           continue;
         } else if (this._hasSingleTagInsideElement(node, "DIV") || this._hasSingleTagInsideElement(node, "SECTION")) {
-          var child = node.children[0];
-          for (var i = 0; i < node.attributes.length; i++) {
+          let child = node.children[0];
+          for (let i = 0; i < node.attributes.length; i++) {
             child.setAttribute(node.attributes[i].name, node.attributes[i].value);
           }
           node.parentNode.replaceChild(child, node);
@@ -457,9 +458,9 @@ Readability.prototype = {
    * @return string
    **/
   _getArticleTitle: function() {
-    var doc = this._doc;
-    var curTitle = "";
-    var origTitle = "";
+    let doc = this._doc;
+    let curTitle = "";
+    let origTitle = "";
 
     try {
       curTitle = origTitle = doc.title.trim();
@@ -469,7 +470,8 @@ Readability.prototype = {
         curTitle = origTitle = this._getInnerText(doc.getElementsByTagName("title")[0]);
     } catch (e) {/* ignore exceptions setting the title. */}
 
-    var titleHadHierarchicalSeparators = false;
+    let titleHadHierarchicalSeparators = false;
+
     function wordCount(str) {
       return str.split(/\s+/).length;
     }
@@ -486,12 +488,12 @@ Readability.prototype = {
     } else if (curTitle.indexOf(": ") !== -1) {
       // Check if we have an heading containing this exact string, so we
       // could assume it's the full title.
-      var headings = this._concatNodeLists(
-        doc.getElementsByTagName("h1"),
-        doc.getElementsByTagName("h2")
+      let headings = this._concatNodeLists(
+          doc.getElementsByTagName("h1"),
+          doc.getElementsByTagName("h2")
       );
-      var trimmedTitle = curTitle.trim();
-      var match = this._someNode(headings, function(heading) {
+      let trimmedTitle = curTitle.trim();
+      let match = this._someNode(headings, function (heading) {
         return heading.textContent.trim() === trimmedTitle;
       });
 
@@ -504,7 +506,7 @@ Readability.prototype = {
           curTitle = origTitle.substring(origTitle.indexOf(":") + 1);
           // But if we have too many words before the colon there's something weird
           // with the titles and the H tags so let's just use the original title instead
-        } else if (wordCount(origTitle.substr(0, origTitle.indexOf(":"))) > 5) {
+        } else if (wordCount(origTitle.prototype.substring(0, origTitle.indexOf(":"))) > 5) {
           curTitle = origTitle;
         }
       }
@@ -523,7 +525,7 @@ Readability.prototype = {
     var curTitleWordCount = wordCount(curTitle);
     if (curTitleWordCount <= 4 &&
         (!titleHadHierarchicalSeparators ||
-         curTitleWordCount != wordCount(origTitle.replace(/[\|\-\\\/>»]+/g, "")) - 1)) {
+            curTitleWordCount != wordCount(origTitle.replace(/[\|\-\\\/>»]+/g, "")) - 1)) {
       curTitle = origTitle;
     }
 
@@ -557,8 +559,8 @@ Readability.prototype = {
   _nextNode: function (node) {
     var next = node;
     while (next
-        && (next.nodeType != this.ELEMENT_NODE)
-        && this.REGEXPS.whitespace.test(next.textContent)) {
+    && (next.nodeType != this.ELEMENT_NODE)
+    && this.REGEXPS.whitespace.test(next.textContent)) {
       next = next.nextSibling;
     }
     return next;
@@ -582,7 +584,7 @@ Readability.prototype = {
       // If we find a <br> chain, remove the <br>s until we hit another node
       // or non-whitespace. This leaves behind the first <br> in the chain
       // (which will be replaced with a <p> later).
-      while ((next = this._nextNode(next)) && (next.tagName == "BR")) {
+      while ((next = this._nextNode(next)) && (next.tagName === "BR")) {
         replaced = true;
         var brSibling = next.nextSibling;
         next.parentNode.removeChild(next);
@@ -599,9 +601,9 @@ Readability.prototype = {
         next = p.nextSibling;
         while (next) {
           // If we've hit another <br><br>, we're done adding children to this <p>.
-          if (next.tagName == "BR") {
+          if (next.tagName === "BR") {
             var nextElem = this._nextNode(next.nextSibling);
-            if (nextElem && nextElem.tagName == "BR")
+            if (nextElem && nextElem.tagName === "BR")
               break;
           }
 
@@ -746,7 +748,7 @@ Readability.prototype = {
    *
    * @param Element
    * @return void
-  **/
+   **/
   _initializeNode: function(node) {
     node.readability = {"contentScore": 0};
 
@@ -868,7 +870,7 @@ Readability.prototype = {
    *
    * @param page a document to run upon. Needs to be a full document, complete with body.
    * @return Element
-  **/
+   **/
   _grabArticle: function (page) {
     this.log("**** grabArticle ****");
     var doc = this._doc;
@@ -944,8 +946,8 @@ Readability.prototype = {
 
         // Remove DIV, SECTION, and HEADER nodes without any content(e.g. text, image, video, or iframe).
         if ((node.tagName === "DIV" || node.tagName === "SECTION" || node.tagName === "HEADER" ||
-             node.tagName === "H1" || node.tagName === "H2" || node.tagName === "H3" ||
-             node.tagName === "H4" || node.tagName === "H5" || node.tagName === "H6") &&
+                node.tagName === "H1" || node.tagName === "H2" || node.tagName === "H3" ||
+                node.tagName === "H4" || node.tagName === "H5" || node.tagName === "H6") &&
             this._isElementWithoutContent(node)) {
           node = this._removeAndGetNext(node);
           continue;
@@ -1001,7 +1003,7 @@ Readability.prototype = {
        * Then add their score to their parent node.
        *
        * A score is determined by things like number of commas, class names, etc. Maybe eventually link density.
-      **/
+       **/
       var candidates = [];
       this._forEachNode(elementsToScore, function(elementToScore) {
         if (!elementToScore.parentNode || typeof(elementToScore.parentNode.tagName) === "undefined")
@@ -1205,7 +1207,7 @@ Readability.prototype = {
             if (nodeLength > 80 && linkDensity < 0.25) {
               append = true;
             } else if (nodeLength < 80 && nodeLength > 0 && linkDensity === 0 &&
-                       nodeContent.search(/\.( |$)/) !== -1) {
+                nodeContent.search(/\.( |$)/) !== -1) {
               append = true;
             }
           }
@@ -1371,8 +1373,8 @@ Readability.prototype = {
           var content = jsonLdElement.textContent.replace(/^\s*<!\[CDATA\[|\]\]>\s*$/g, "");
           var parsed = JSON.parse(content);
           if (
-            !parsed["@context"] ||
-            !parsed["@context"].match(/^https?\:\/\/schema\.org$/)
+              !parsed["@context"] ||
+              !parsed["@context"].match(/^https?\:\/\/schema\.org$/)
           ) {
             return;
           }
@@ -1380,15 +1382,15 @@ Readability.prototype = {
           if (!parsed["@type"] && Array.isArray(parsed["@graph"])) {
             parsed = parsed["@graph"].find(function(it) {
               return (it["@type"] || "").match(
-                this.REGEXPS.jsonLdArticleTypes
+                  this.REGEXPS.jsonLdArticleTypes
               );
             });
           }
 
           if (
-            !parsed ||
-            !parsed["@type"] ||
-            !parsed["@type"].match(this.REGEXPS.jsonLdArticleTypes)
+              !parsed ||
+              !parsed["@type"] ||
+              !parsed["@type"].match(this.REGEXPS.jsonLdArticleTypes)
           ) {
             return;
           }
@@ -1419,21 +1421,21 @@ Readability.prototype = {
               metadata.byline = parsed.author.name.trim();
             } else if (Array.isArray(parsed.author) && parsed.author[0] && typeof parsed.author[0].name === "string") {
               metadata.byline = parsed.author
-                .filter(function(author) {
-                  return author && typeof author.name === "string";
-                })
-                .map(function(author) {
-                  return author.name.trim();
-                })
-                .join(", ");
+                  .filter(function(author) {
+                    return author && typeof author.name === "string";
+                  })
+                  .map(function(author) {
+                    return author.name.trim();
+                  })
+                  .join(", ");
             }
           }
           if (typeof parsed.description === "string") {
             metadata.excerpt = parsed.description.trim();
           }
           if (
-            parsed.publisher &&
-            typeof parsed.publisher.name === "string"
+              parsed.publisher &&
+              typeof parsed.publisher.name === "string"
           ) {
             metadata.siteName = parsed.publisher.name.trim();
           }
@@ -1499,13 +1501,13 @@ Readability.prototype = {
 
     // get title
     metadata.title = jsonld.title ||
-                     values["dc:title"] ||
-                     values["dcterm:title"] ||
-                     values["og:title"] ||
-                     values["weibo:article:title"] ||
-                     values["weibo:webpage:title"] ||
-                     values["title"] ||
-                     values["twitter:title"];
+        values["dc:title"] ||
+        values["dcterm:title"] ||
+        values["og:title"] ||
+        values["weibo:article:title"] ||
+        values["weibo:webpage:title"] ||
+        values["title"] ||
+        values["twitter:title"];
 
     if (!metadata.title) {
       metadata.title = this._getArticleTitle();
@@ -1513,23 +1515,23 @@ Readability.prototype = {
 
     // get author
     metadata.byline = jsonld.byline ||
-                      values["dc:creator"] ||
-                      values["dcterm:creator"] ||
-                      values["author"];
+        values["dc:creator"] ||
+        values["dcterm:creator"] ||
+        values["author"];
 
     // get description
     metadata.excerpt = jsonld.excerpt ||
-                       values["dc:description"] ||
-                       values["dcterm:description"] ||
-                       values["og:description"] ||
-                       values["weibo:article:description"] ||
-                       values["weibo:webpage:description"] ||
-                       values["description"] ||
-                       values["twitter:description"];
+        values["dc:description"] ||
+        values["dcterm:description"] ||
+        values["og:description"] ||
+        values["weibo:article:description"] ||
+        values["weibo:webpage:description"] ||
+        values["description"] ||
+        values["twitter:description"];
 
     // get site name
     metadata.siteName = jsonld.siteName ||
-                        values["og:site_name"];
+        values["og:site_name"];
 
     // in many sites the meta value is escaped with HTML entities,
     // so here we need to unescape it
@@ -1546,7 +1548,7 @@ Readability.prototype = {
    * whether as a direct child or as its descendants.
    *
    * @param Element
-  **/
+   **/
   _isSingleImage: function(node) {
     if (node.tagName === "IMG") {
       return true;
@@ -1566,7 +1568,7 @@ Readability.prototype = {
    * some sites (e.g. Medium).
    *
    * @param Element
-  **/
+   **/
   _unwrapNoscriptImages: function(doc) {
     // Find img without source or attributes that might contains image, and remove it.
     // This is done to prevent a placeholder img is replaced by img from noscript in next step.
@@ -1640,7 +1642,7 @@ Readability.prototype = {
    * Removes script tags from the document.
    *
    * @param Element
-  **/
+   **/
   _removeScripts: function(doc) {
     this._removeNodes(this._getAllNodesWithTag(doc, ["script"]), function(scriptNode) {
       scriptNode.nodeValue = "";
@@ -1657,7 +1659,7 @@ Readability.prototype = {
    *
    * @param Element
    * @param string tag of child element
-  **/
+   **/
   _hasSingleTagInsideElement: function(element, tag) {
     // There should be exactly 1 element child with given tag
     if (element.children.length != 1 || element.children[0].tagName !== tag) {
@@ -1667,15 +1669,15 @@ Readability.prototype = {
     // And there should be no text nodes with real content
     return !this._someNode(element.childNodes, function(node) {
       return node.nodeType === this.TEXT_NODE &&
-             this.REGEXPS.hasContent.test(node.textContent);
+          this.REGEXPS.hasContent.test(node.textContent);
     });
   },
 
   _isElementWithoutContent: function(node) {
     return node.nodeType === this.ELEMENT_NODE &&
-      node.textContent.trim().length == 0 &&
-      (node.children.length == 0 ||
-       node.children.length == node.getElementsByTagName("br").length + node.getElementsByTagName("hr").length);
+        node.textContent.trim().length == 0 &&
+        (node.children.length == 0 ||
+            node.children.length == node.getElementsByTagName("br").length + node.getElementsByTagName("hr").length);
   },
 
   /**
@@ -1686,23 +1688,23 @@ Readability.prototype = {
   _hasChildBlockElement: function (element) {
     return this._someNode(element.childNodes, function(node) {
       return this.DIV_TO_P_ELEMS.has(node.tagName) ||
-             this._hasChildBlockElement(node);
+          this._hasChildBlockElement(node);
     });
   },
 
   /***
    * Determine if a node qualifies as phrasing content.
    * https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Content_categories#Phrasing_content
-  **/
+   **/
   _isPhrasingContent: function(node) {
     return node.nodeType === this.TEXT_NODE || this.PHRASING_ELEMS.indexOf(node.tagName) !== -1 ||
-      ((node.tagName === "A" || node.tagName === "DEL" || node.tagName === "INS") &&
-        this._everyNode(node.childNodes, this._isPhrasingContent));
+        ((node.tagName === "A" || node.tagName === "DEL" || node.tagName === "INS") &&
+            this._everyNode(node.childNodes, this._isPhrasingContent));
   },
 
   _isWhitespace: function(node) {
     return (node.nodeType === this.TEXT_NODE && node.textContent.trim().length === 0) ||
-           (node.nodeType === this.ELEMENT_NODE && node.tagName === "BR");
+        (node.nodeType === this.ELEMENT_NODE && node.tagName === "BR");
   },
 
   /**
@@ -1712,7 +1714,7 @@ Readability.prototype = {
    * @param Element
    * @param Boolean normalizeSpaces (default: true)
    * @return string
-  **/
+   **/
   _getInnerText: function(e, normalizeSpaces) {
     normalizeSpaces = (typeof normalizeSpaces === "undefined") ? true : normalizeSpaces;
     var textContent = e.textContent.trim();
@@ -1729,7 +1731,7 @@ Readability.prototype = {
    * @param Element
    * @param string - what to split on. Default is ","
    * @return number (integer)
-  **/
+   **/
   _getCharCount: function(e, s) {
     s = s || ",";
     return this._getInnerText(e).split(s).length - 1;
@@ -1741,7 +1743,7 @@ Readability.prototype = {
    *
    * @param Element
    * @return void
-  **/
+   **/
   _cleanStyles: function(e) {
     if (!e || e.tagName.toLowerCase() === "svg")
       return;
@@ -1769,7 +1771,7 @@ Readability.prototype = {
    *
    * @param Element
    * @return number (float)
-  **/
+   **/
   _getLinkDensity: function(element) {
     var textLength = this._getInnerText(element).length;
     if (textLength === 0)
@@ -1793,7 +1795,7 @@ Readability.prototype = {
    *
    * @param Element
    * @return number (Integer)
-  **/
+   **/
   _getClassWeight: function(e) {
     if (!this._flagIsActive(this.FLAG_WEIGHT_CLASSES))
       return 0;
@@ -1915,12 +1917,12 @@ Readability.prototype = {
     for (var i = 0; i < tables.length; i++) {
       var table = tables[i];
       var role = table.getAttribute("role");
-      if (role == "presentation") {
+      if (role === "presentation") {
         table._readabilityDataTable = false;
         continue;
       }
       var datatable = table.getAttribute("datatable");
-      if (datatable == "0") {
+      if (datatable === "0") {
         table._readabilityDataTable = false;
         continue;
       }
@@ -2002,7 +2004,7 @@ Readability.prototype = {
       }
 
       // also check for "null" to work around https://github.com/jsdom/jsdom/issues/2580
-      if ((elem.src || (elem.srcset && elem.srcset != "null")) && elem.className.toLowerCase().indexOf("lazy") === -1) {
+      if ((elem.src || (elem.srcset && elem.srcset !== "null")) && elem.className.toLowerCase().indexOf("lazy") === -1) {
         return;
       }
 
@@ -2129,13 +2131,13 @@ Readability.prototype = {
         var contentLength = this._getInnerText(node).length;
 
         var haveToRemove =
-          (img > 1 && p / img < 0.5 && !this._hasAncestorTag(node, "figure")) ||
-          (!isList && li > p) ||
-          (input > Math.floor(p/3)) ||
-          (!isList && headingDensity < 0.9 && contentLength < 25 && (img === 0 || img > 2) && !this._hasAncestorTag(node, "figure")) ||
-          (!isList && weight < 25 && linkDensity > 0.2) ||
-          (weight >= 25 && linkDensity > 0.5) ||
-          ((embedCount === 1 && contentLength < 75) || embedCount > 1);
+            (img > 1 && p / img < 0.5 && !this._hasAncestorTag(node, "figure")) ||
+            (!isList && li > p) ||
+            (input > Math.floor(p/3)) ||
+            (!isList && headingDensity < 0.9 && contentLength < 25 && (img === 0 || img > 2) && !this._hasAncestorTag(node, "figure")) ||
+            (!isList && weight < 25 && linkDensity > 0.2) ||
+            (weight >= 25 && linkDensity > 0.5) ||
+            ((embedCount === 1 && contentLength < 75) || embedCount > 1);
         return haveToRemove;
       }
       return false;
@@ -2166,7 +2168,7 @@ Readability.prototype = {
    *
    * @param Element
    * @return void
-  **/
+   **/
   _cleanHeaders: function(e) {
     let headingNodes = this._getAllNodesWithTag(e, ["h1", "h2"]);
     this._removeNodes(headingNodes, function(node) {
@@ -2186,7 +2188,7 @@ Readability.prototype = {
    * @return boolean indicating whether this is a title-like header.
    */
   _headerDuplicatesTitle: function(node) {
-    if (node.tagName != "H1" && node.tagName != "H2") {
+    if (node.tagName !== "H1" && node.tagName !== "H2") {
       return false;
     }
     var heading = this._getInnerText(node, false);
@@ -2204,10 +2206,10 @@ Readability.prototype = {
 
   _isProbablyVisible: function(node) {
     // Have to null-check node.style and node.className.indexOf to deal with SVG and MathML nodes.
-    return (!node.style || node.style.display != "none")
-      && !node.hasAttribute("hidden")
-      //check for "fallback-image" so that wikimedia math images are displayed
-      && (!node.hasAttribute("aria-hidden") || node.getAttribute("aria-hidden") != "true" || (node.className && node.className.indexOf && node.className.indexOf("fallback-image") !== -1));
+    return (!node.style || node.style.display !== "none")
+        && !node.hasAttribute("hidden")
+        //check for "fallback-image" so that wikimedia math images are displayed
+        && (!node.hasAttribute("aria-hidden") || node.getAttribute("aria-hidden") !== "true" || (node.className && node.className.indexOf && node.className.indexOf("fallback-image") !== -1));
   },
 
   /**
